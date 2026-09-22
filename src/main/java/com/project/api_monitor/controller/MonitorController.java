@@ -1,6 +1,7 @@
 package com.project.api_monitor.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.project.api_monitor.model.Monitor;
 import com.project.api_monitor.model.MonitorResult;
 import com.project.api_monitor.model.MonitorStatistics;
+import com.project.api_monitor.model.MonitorStatusResponse;
 import com.project.api_monitor.service.HealthCheckService;
 import com.project.api_monitor.service.MonitorKafkaProducer;
 import com.project.api_monitor.service.MonitorResultService;
@@ -81,4 +83,12 @@ public class MonitorController {
 		Monitor monitor = service.getMonitorById(id);
 		return monitorResultService.getStatistics(monitor);
 	}
-}
+	
+	@GetMapping("/api/monitors/{id}/status")
+	public Optional<MonitorStatusResponse> getStatus(@PathVariable Integer id) throws Exception{
+		Monitor monitor = service.getMonitorById(id);
+		Optional<MonitorStatusResponse> response = monitorResultService.getCurrentStatus(monitor);
+		return response;		
+		
+		}
+	}

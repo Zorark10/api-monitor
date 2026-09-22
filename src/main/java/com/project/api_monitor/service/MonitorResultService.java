@@ -1,7 +1,7 @@
 package com.project.api_monitor.service;
 
 import java.util.List;
-
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +10,7 @@ import com.project.api_monitor.model.Monitor;
 import com.project.api_monitor.model.MonitorResult;
 import com.project.api_monitor.model.MonitorStatistics;
 import com.project.api_monitor.model.MonitorStatus;
+import com.project.api_monitor.model.MonitorStatusResponse;
 import com.project.api_monitor.repository.MonitorResultRepo;
 
 @Service
@@ -72,4 +73,19 @@ public class MonitorResultService {
 		
 	}
 	
+	public Optional<MonitorResult> getLatestResult(Monitor monitor) {
+		return repo.findFirstByMonitorOrderByCheckedAtDesc(monitor);
+	}
+	
+	public Optional<MonitorStatusResponse> getCurrentStatus(Monitor monitor){
+		Optional<MonitorResult> result = getLatestResult(monitor);
+		if(result.isEmpty())
+			return Optional.empty();
+		
+		MonitorResult r = result.get();
+		MonitorStatusResponse response = MonitorStatusResponse.builder().monitorId(monitor.getId())
+										.status(r.getStatus()).responseTime(r.getResponseTime()).checkedAt(r.getCheckedAt())
+										.build();
+		return Optional.of(response);
+	}
 }
