@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 import com.project.api_monitor.model.Monitor;
 import com.project.api_monitor.repository.MonitorRepo;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class MonitorKafkaConsumer {
 	
-	@Autowired
-	private MonitorRepo monitorRepo;
-	
-	@Autowired
-	private HealthCheckService healthCheckService;
+	private final MonitorRepo monitorRepo;
+	private final HealthCheckService healthCheckService;
 	
 	@KafkaListener(topics = "monitor-checks",
 					groupId = "monitor-check-group")
