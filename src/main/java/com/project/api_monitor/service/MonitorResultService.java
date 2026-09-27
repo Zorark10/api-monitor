@@ -13,10 +13,13 @@ import com.project.api_monitor.model.MonitorStatus;
 import com.project.api_monitor.model.MonitorStatusResponse;
 import com.project.api_monitor.repository.MonitorResultRepo;
 
+import lombok.RequiredArgsConstructor;
+@RequiredArgsConstructor
 @Service
 public class MonitorResultService {
-	@Autowired
-	private MonitorResultRepo repo;
+
+	private final MonitorResultRepo repo;
+	private final RedisSchedulerService redisSchedulerService;
 	
 	public MonitorResult saveResult(MonitorResult result) {
 		return repo.save(result);
@@ -78,6 +81,9 @@ public class MonitorResultService {
 	}
 	
 	public Optional<MonitorStatusResponse> getCurrentStatus(Monitor monitor){
+		MonitorStatusResponse cached = redisSchedulerService.getCurrentStatus(monitor.getId());		if(cached != null)
+			return Optional.of(cached);
+		
 		Optional<MonitorResult> result = getLatestResult(monitor);
 		if(result.isEmpty())
 			return Optional.empty();
@@ -86,6 +92,7 @@ public class MonitorResultService {
 		MonitorStatusResponse response = MonitorStatusResponse.builder().monitorId(monitor.getId())
 										.status(r.getStatus()).responseTime(r.getResponseTime()).checkedAt(r.getCheckedAt())
 										.build();
+		redisSchedulerService.setCurrentStatus(monitor.getId(), response);
 		return Optional.of(response);
 	}
 }
