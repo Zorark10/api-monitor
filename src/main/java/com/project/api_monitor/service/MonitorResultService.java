@@ -1,13 +1,15 @@
 package com.project.api_monitor.service;
 
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import com.project.api_monitor.model.Monitor;
 import com.project.api_monitor.model.MonitorResult;
+import com.project.api_monitor.model.MonitorResultResponse;
 import com.project.api_monitor.model.MonitorStatistics;
 import com.project.api_monitor.model.MonitorStatus;
 import com.project.api_monitor.model.MonitorStatusResponse;
@@ -94,5 +96,12 @@ public class MonitorResultService {
 										.build();
 		redisSchedulerService.setCurrentStatus(monitor.getId(), response);
 		return Optional.of(response);
+	}
+	
+	public Page<MonitorResultResponse> getResultsByMonitorPaginated(Monitor monitor, Pageable pageable){
+		Page<MonitorResult> page = repo.findByMonitor(monitor, pageable);
+		return page.map(result -> MonitorResultResponse.builder().id(result.getId()).status(result.getStatus())
+				.statusCode(result.getStatusCode()).responseTime(result.getResponseTime())
+				.checkedAt(result.getCheckedAt()).build());
 	}
 }

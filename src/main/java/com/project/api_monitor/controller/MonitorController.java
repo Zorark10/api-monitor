@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.project.api_monitor.model.Monitor;
 import com.project.api_monitor.model.MonitorResult;
+import com.project.api_monitor.model.MonitorResultResponse;
 import com.project.api_monitor.model.MonitorStatistics;
 import com.project.api_monitor.model.MonitorStatusResponse;
 import com.project.api_monitor.service.HealthCheckService;
@@ -22,26 +26,21 @@ import com.project.api_monitor.service.MonitorResultService;
 import com.project.api_monitor.service.MonitorService;
 import com.project.api_monitor.service.RedisSchedulerService;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
 
 @RestController
+@RequiredArgsConstructor
 public class MonitorController {
-	@Autowired
-	private MonitorService service;
-	
-	@Autowired
-	private MonitorResultService monitorResultService;
-	
-	@Autowired
-	private HealthCheckService healthCheckService;
-	
-	@Autowired
-	private RedisSchedulerService redisSchedulerService;
-	
-	@Autowired
-	private MonitorKafkaProducer monitorKafkaProducer;
-	
+	private final MonitorService service;
+
+	private final MonitorResultService monitorResultService;
+
+	private final RedisSchedulerService redisSchedulerService;
+
 	@PostMapping("/api/monitors")
-	public Monitor addMonitor(@RequestBody Monitor monitor) {
+	public Monitor addMonitor(@RequestBody @Valid Monitor monitor) {
 		return service.addMonitor(monitor);
 	}
 	
@@ -56,7 +55,7 @@ public class MonitorController {
 	}
 	
 	@PatchMapping("/api/monitors/{id}")
-	public Monitor updateMonitor(@PathVariable Integer id, @RequestBody Monitor monitor) throws Exception {
+	public Monitor updateMonitor(@PathVariable Integer id, @RequestBody @Valid Monitor monitor) throws Exception {
 		return service.updateMonitor(id, monitor);
 	}
 	
@@ -73,9 +72,10 @@ public class MonitorController {
 	}
 	
 	@GetMapping("/api/monitors/{id}/results")
-	public List<MonitorResult> getResults(@PathVariable Integer id) throws Exception{
+	
+	public Page<MonitorResultResponse> getResults(@PathVariable Integer id, @PageableDefault(size = 20) Pageable pageable) throws Exception{
 		Monitor monitor = service.getMonitorById(id);
-		return monitorResultService.getResultsByMonitor(monitor);
+		return monitorResultService.getResultsByMonitorPaginated(monitor, pageable);
 	}
 	
 	@GetMapping("/api/monitors/{id}/statistics")
@@ -90,5 +90,5 @@ public class MonitorController {
 		Optional<MonitorStatusResponse> response = monitorResultService.getCurrentStatus(monitor);
 		return response;		
 		
-		}
 	}
+}

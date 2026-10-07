@@ -1,0 +1,26 @@
+package com.project.api_monitor.model;
+
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class MonitorResultResponse {
+	private Integer id;
+	private MonitorStatus status;
+	private Integer statusCode;
+	private Long responseTime;
+	
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+	private LocalDateTime checkedAt;
+}

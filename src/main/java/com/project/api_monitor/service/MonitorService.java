@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.project.api_monitor.exception.MonitorNotFoundException;
 import com.project.api_monitor.model.Monitor;
 import com.project.api_monitor.repository.MonitorRepo;
 
@@ -25,10 +26,7 @@ public class MonitorService {
 	}
 	
 	public Monitor getMonitorById(Integer id) throws Exception {
-		Monitor monitor = monitorRepo.findById(id).orElse(null);
-		if(monitor == null)
-			throw new Exception();
-		return monitor;
+		return monitorRepo.findById(id).orElseThrow(() -> new MonitorNotFoundException(id));
 	}
 	
 	public Monitor updateMonitor(Integer id, Monitor monitor) throws Exception {
